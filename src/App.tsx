@@ -1,18 +1,30 @@
-import { FC, useState, useEffect, useCallback } from 'react';
-import Menu from './Menu';
-import { Dashboard } from './Dashboard';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import MenuIcon from '@mui/icons-material/Menu';
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
-import { Box, Drawer, IconButton, Toolbar, Typography, styled, SelectChangeEvent, FormControlLabel, Switch, Button } from '@mui/material';
+import { FC, useState, useEffect, useCallback } from "react";
+import Menu from "./Menu";
+import { Dashboard } from "./Dashboard";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import MenuIcon from "@mui/icons-material/Menu";
+import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+import {
+  Box,
+  Drawer,
+  IconButton,
+  Toolbar,
+  Typography,
+  styled,
+  SelectChangeEvent,
+  FormControlLabel,
+  Switch,
+  Button,
+} from "@mui/material";
 import {
   useGetDashboardModel,
   WidgetModel,
   useGetDashboardModels,
-  useThemeContext
-} from '@sisense/sdk-ui';
-import ExportPDF from './exportPdf';
-import ExportButton from './ExportButton';
+  DashboardModel,
+  useThemeContext,
+} from "@sisense/sdk-ui";
+import ExportPDF from "./exportPdf";
+import ExportButton from "./ExportButton";
 
 const drawerWidth = 600;
 
@@ -20,15 +32,18 @@ interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
 }
 
-interface AppProps {
-}
+interface AppProps {}
 
 export const App: FC<AppProps> = () => {
   const [isMoveMode, setIsMoveMode] = useState(false);
-  const [dashboardOid, setDashboardOid] = useState<string>('');
+  const [dashboardOid, setDashboardOid] = useState<string>("");
   const [dashboardWidgets, setDashboardWidgets] = useState<WidgetModel[]>([]);
   const [open, setOpen] = useState(true);
-  const { dashboards, isLoading: isDashboardsLoading, isError: isDashboardsError } = useGetDashboardModels();
+  const {
+    dashboards,
+    isLoading: isDashboardsLoading,
+    isError: isDashboardsError,
+  } = useGetDashboardModels();
   const { themeSettings } = useThemeContext();
   const { dashboard, isLoading, isError } = useGetDashboardModel({
     includeWidgets: true,
@@ -39,22 +54,24 @@ export const App: FC<AppProps> = () => {
     [key: string]: {
       top: number;
       left: number;
-    }
+    };
   }>({});
 
   const moveBox = useCallback(
     (id: string, left: number, top: number) => {
-      widgetPositions[id] = {left, top};
+      widgetPositions[id] = { left, top };
       setWidgetPositions(widgetPositions);
     },
-    [widgetPositions, setWidgetPositions],
+    [widgetPositions, setWidgetPositions]
   );
-  const handleDataExporterMode = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDataExporterMode = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setDataExporterMode(event.target.checked);
   };
 
   useEffect(() => {
-    if (dashboardOid === '' && dashboards && dashboards.length > 0) {
+    if (dashboardOid === "" && dashboards && dashboards.length > 0) {
       setDashboardOid(dashboards[0].oid);
     }
   }, [dashboards]);
@@ -63,29 +80,31 @@ export const App: FC<AppProps> = () => {
     setIsMoveMode(event.target.checked);
   };
 
-
   const handleWidgetDelete = (widget: WidgetModel) => {
     const clonedDashboardWidgets = [...dashboardWidgets];
-    clonedDashboardWidgets.splice(dashboardWidgets.findIndex(i => i.oid === widget.oid), 1);
+    clonedDashboardWidgets.splice(
+      dashboardWidgets.findIndex((i) => i.oid === widget.oid),
+      1
+    );
     setDashboardWidgets(clonedDashboardWidgets);
-  }
+  };
 
   const handleWidgetOrderUpdate = (currentIndex: number, newIndex: number) => {
     if (newIndex !== -1 && newIndex !== dashboardWidgets.length) {
-      setDashboardWidgets(widgets => {
+      setDashboardWidgets((widgets) => {
         const currentItem = widgets[currentIndex];
         widgets[currentIndex] = widgets[newIndex];
         widgets[newIndex] = currentItem;
         return [...widgets];
-      })
+      });
     }
-  }
+  };
 
   const handleMenuItemDrop = (item: WidgetModel) => {
     setDashboardWidgets((widgets) => {
-      const ifExist = widgets.find(dW => dW.oid === item.oid);
+      const ifExist = widgets.find((dW) => dW.oid === item.oid);
       if (ifExist) {
-        ifExist && alert('Widget Already Exist in Dashboard!');
+        ifExist && alert("Widget Already Exist in Dashboard!");
         return widgets;
       } else {
         return [...widgets, item];
@@ -125,7 +144,7 @@ export const App: FC<AppProps> = () => {
             aria-label="open drawer"
             onClick={handleDrawerOpen}
             edge="start"
-            sx={{ mr: 2, ...(open && { display: 'none' }) }}
+            sx={{ mr: 2, ...(open && { display: "none" }) }}
           >
             <MenuIcon />
           </IconButton>
@@ -133,11 +152,27 @@ export const App: FC<AppProps> = () => {
             Customizable Dashboard
           </Typography>
           <ModeSwitchBlock>
-            <FormControlLabel control={
-              <><span>Enable resize mode</span><Switch color="default" onChange={handleModeChange} checked={isMoveMode} /></>
-            } label="Enable free-move mode" />
+            <FormControlLabel
+              control={
+                <>
+                  <span>Enable resize mode</span>
+                  <Switch
+                    color="default"
+                    onChange={handleModeChange}
+                    checked={isMoveMode}
+                  />
+                </>
+              }
+              label="Enable free-move mode"
+            />
           </ModeSwitchBlock>
-          <Button onClick={handleRemoveAllWidgets} color='warning' variant="contained">Remove all widgets</Button>
+          <Button
+            onClick={handleRemoveAllWidgets}
+            color="warning"
+            variant="contained"
+          >
+            Remove all widgets
+          </Button>
           <ExportPDF />
         </Toolbar>
       </AppBar>
@@ -145,9 +180,9 @@ export const App: FC<AppProps> = () => {
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          '& .MuiDrawer-paper': {
+          "& .MuiDrawer-paper": {
             width: drawerWidth,
-            boxSizing: 'border-box',
+            boxSizing: "border-box",
           },
         }}
         variant="persistent"
@@ -155,44 +190,65 @@ export const App: FC<AppProps> = () => {
         open={open}
       >
         <DrawerHeader>
-          <FormControlLabel control={
-            <><span>Widget menu</span><Switch color="default" onChange={handleDataExporterMode} checked={dataExporterMode} /></>
-          } label="Data exporter menu" />
+          <FormControlLabel
+            control={
+              <>
+                <span>Widget menu</span>
+                <Switch
+                  color="default"
+                  onChange={handleDataExporterMode}
+                  checked={dataExporterMode}
+                />
+              </>
+            }
+            label="Data exporter menu"
+          />
           <IconButton onClick={handleDrawerClose}>
             <ChevronLeftIcon />
           </IconButton>
         </DrawerHeader>
-        {dataExporterMode 
-          ? (<ExportButton />) 
-          : (<Menu
-              onDashboardChange={handleDashboardChange}
-              dashboards={dashboards}
-              themeSettings={themeSettings}
-              menuItems={dashboard?.widgets || []}
-              dashboardOid={dashboard.oid}
-              onItemDrop={handleMenuItemDrop} />)}
+        {dataExporterMode ? (
+          <ExportButton />
+        ) : (
+          <Menu
+            onDashboardChange={handleDashboardChange}
+            dashboards={dashboards}
+            themeSettings={themeSettings}
+            menuItems={dashboard?.widgets || []}
+            dashboardOid={dashboard.oid}
+            onItemDrop={handleMenuItemDrop}
+          />
+        )}
       </Drawer>
       <Main open={open}>
         <DrawerHeader />
-        <Dashboard moveBox={moveBox} widgetPositions={widgetPositions} isMoveMode={isMoveMode} onWidgetOrderUpdate={handleWidgetOrderUpdate} themeSettings={themeSettings} onWidgetDelete={handleWidgetDelete} dashboardOid={dashboard.oid}
-          dashboardWidgets={dashboardWidgets} />
+        <Dashboard
+          moveBox={moveBox}
+          widgetPositions={widgetPositions}
+          isMoveMode={isMoveMode}
+          onWidgetOrderUpdate={handleWidgetOrderUpdate}
+          themeSettings={themeSettings}
+          onWidgetDelete={handleWidgetDelete}
+          dashboardOid={dashboard.oid}
+          dashboardWidgets={dashboardWidgets}
+        />
       </Main>
     </MainPage>
   );
 };
 
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
+const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
   open?: boolean;
 }>(({ theme, open }) => ({
   flexGrow: 1,
   padding: theme.spacing(3),
-  transition: theme.transitions.create('margin', {
+  transition: theme.transitions.create("margin", {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
   marginLeft: `-${drawerWidth}px`,
   ...(open && {
-    transition: theme.transitions.create('margin', {
+    transition: theme.transitions.create("margin", {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
@@ -201,16 +257,16 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
 }));
 
 const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== 'open',
+  shouldForwardProp: (prop) => prop !== "open",
 })<AppBarProps>(({ theme, open }) => ({
-  transition: theme.transitions.create(['margin', 'width'], {
+  transition: theme.transitions.create(["margin", "width"], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
   ...(open && {
     width: `calc(100% - ${drawerWidth}px)`,
     marginLeft: `${drawerWidth}px`,
-    transition: theme.transitions.create(['margin', 'width'], {
+    transition: theme.transitions.create(["margin", "width"], {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
@@ -218,21 +274,21 @@ const AppBar = styled(MuiAppBar, {
 }));
 
 const MainPage = styled(Box)({
-  display: 'flex',
-  justifyContent: 'flex-start',
-  alignItems: 'stretch',
-  width: '100%',
-  height: '100%',
+  display: "flex",
+  justifyContent: "flex-start",
+  alignItems: "stretch",
+  width: "100%",
+  height: "100%",
 });
 
-const ModeSwitchBlock = styled('div')({ margin: '0 3rem' });
+const ModeSwitchBlock = styled("div")({ margin: "0 3rem" });
 
-const DrawerHeader = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
+const DrawerHeader = styled("div")(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
   padding: theme.spacing(0, 1),
   ...theme.mixins.toolbar,
-  justifyContent: 'flex-end',
+  justifyContent: "flex-end",
 }));
 
 export default App;
