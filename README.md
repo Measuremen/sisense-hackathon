@@ -1,4 +1,4 @@
-# sinsense-hackaton
+# sisense-hackaton
 
 `npm run dev` - start the local server with hotreaload on changes
 
