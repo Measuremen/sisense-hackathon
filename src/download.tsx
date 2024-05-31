@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useExecuteQuery } from "@sisense/sdk-ui";
-import { Parser } from '@json2csv/plainjs';
-import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
+import * as FileSaver from 'file-saver';
 
 export const Download: FC<any> = ({
     dimensions,
@@ -11,7 +9,6 @@ export const Download: FC<any> = ({
     type
 }) => {
   const [enable, setEnable] = useState(false);
-console.log(dimensions, DataSource);
 
   const onExport = () => {
     setEnable(true);
@@ -24,13 +21,30 @@ console.log(dimensions, DataSource);
   };
   const { data, isLoading, isError } = useExecuteQuery(queryProps);
 
-  if (!isLoading) {
-    console.log({data}, isError);
-  }
+  
+
+  useEffect(() => {
+    if (!isLoading && data) {
+      console.log({data}, isError);
+      const columns = data?.columns.map((col: any) => col.name);
+  
+      // Extract rows
+      const rows = data?.rows.map((row: any) => row.map((cell: any) => cell.data));
+      
+      // Convert data to CSV format
+      const csvContent = `${columns?.join(',')}\n${rows?.map(row => row.join(',')).join('\n')}`;
+  
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+  
+      // Save the Blob object as a CSV file
+      FileSaver.saveAs(blob, `${type}.csv`);
+    }
+  }, [enable, data])
+
 
   return (
     <>
-     <button onClick={() => onExport()}>Download {type} Data</button>
+     <button style={{padding: "10px 0", margin: "5px 0"}} onClick={onExport}>Download {type} Data</button>
     </>
   );
 };

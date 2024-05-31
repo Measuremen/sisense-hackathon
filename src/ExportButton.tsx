@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import * as DM from './sample-health';
 import Download from "./download";
 
@@ -12,8 +12,12 @@ enum TableType {
 
 export const ExportButton: FC<any> = () => {
   const [dimensions, setDimensions] = useState<any>([]);
+  
+  useEffect(()=> {
+    fetchExportDataList()
+  }, [])
 
-  const onExport = () => {
+  const fetchExportDataList = () => {
     const tableName = Object.keys(DM) as [TableType];
     for (let index = 0; index < tableName.length; index++) {
       const temp: any[] = [];
@@ -30,7 +34,6 @@ export const ExportButton: FC<any> = () => {
 
   return (
     <>
-     <button onClick={() => onExport()}>Prepare All Data</button>
       {Object.keys(dimensions).map(res => {
         return <>
           <Download type={res} dimensions={dimensions} DataSource={DM.DataSource}></Download>

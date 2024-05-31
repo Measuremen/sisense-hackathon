@@ -11,7 +11,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <SisenseContextProvider
       url={import.meta.env.VITE_URL}
       token={import.meta.env.VITE_TOKON}
-    >
+      >
       <DndProvider backend={HTML5Backend}>
         <CssBaseline />
         <App />

@@ -48,6 +48,7 @@ export const Menu: FC<MenuProps> = ({ onItemDrop, dashboardOid, menuItems = [], 
             ))}
           </Select>
         </FormControl>
+
         <FormControl variant="outlined">
           <InputLabel>Widget Type</InputLabel>
           <Select

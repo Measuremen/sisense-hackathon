@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useCallback } from 'react';
 import Menu from './Menu';
 import { Dashboard } from './Dashboard';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -11,6 +11,8 @@ import {
   useGetDashboardModels,
   useThemeContext
 } from '@sisense/sdk-ui';
+import ExportPDF from './exportPdf';
+import ExportButton from './ExportButton';
 
 const drawerWidth = 600;
 
@@ -32,6 +34,24 @@ export const App: FC<AppProps> = () => {
     includeWidgets: true,
     dashboardOid,
   });
+  const [dataExporterMode, setDataExporterMode] = useState<boolean>(false);
+  const [widgetPositions, setWidgetPositions] = useState<{
+    [key: string]: {
+      top: number;
+      left: number;
+    }
+  }>({});
+
+  const moveBox = useCallback(
+    (id: string, left: number, top: number) => {
+      widgetPositions[id] = {left, top};
+      setWidgetPositions(widgetPositions);
+    },
+    [widgetPositions, setWidgetPositions],
+  );
+  const handleDataExporterMode = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setDataExporterMode(event.target.checked);
+  };
 
   useEffect(() => {
     if (dashboardOid === '' && dashboards && dashboards.length > 0) {
@@ -118,6 +138,7 @@ export const App: FC<AppProps> = () => {
             } label="Enable free-move mode" />
           </ModeSwitchBlock>
           <Button onClick={handleRemoveAllWidgets} color='warning' variant="contained">Remove all widgets</Button>
+          <ExportPDF />
         </Toolbar>
       </AppBar>
       <Drawer
@@ -134,21 +155,26 @@ export const App: FC<AppProps> = () => {
         open={open}
       >
         <DrawerHeader>
+          <FormControlLabel control={
+            <><span>Widget menu</span><Switch color="default" onChange={handleDataExporterMode} checked={dataExporterMode} /></>
+          } label="Data exporter menu" />
           <IconButton onClick={handleDrawerClose}>
             <ChevronLeftIcon />
           </IconButton>
         </DrawerHeader>
-        <Menu
-          onDashboardChange={handleDashboardChange}
-          dashboards={dashboards}
-          themeSettings={themeSettings}
-          menuItems={dashboard?.widgets || []}
-          dashboardOid={dashboard.oid}
-          onItemDrop={handleMenuItemDrop} />
+        {dataExporterMode 
+          ? (<ExportButton />) 
+          : (<Menu
+              onDashboardChange={handleDashboardChange}
+              dashboards={dashboards}
+              themeSettings={themeSettings}
+              menuItems={dashboard?.widgets || []}
+              dashboardOid={dashboard.oid}
+              onItemDrop={handleMenuItemDrop} />)}
       </Drawer>
       <Main open={open}>
         <DrawerHeader />
-        <Dashboard isMoveMode={isMoveMode} onWidgetOrderUpdate={handleWidgetOrderUpdate} themeSettings={themeSettings} onWidgetDelete={handleWidgetDelete} dashboardOid={dashboard.oid}
+        <Dashboard moveBox={moveBox} widgetPositions={widgetPositions} isMoveMode={isMoveMode} onWidgetOrderUpdate={handleWidgetOrderUpdate} themeSettings={themeSettings} onWidgetDelete={handleWidgetDelete} dashboardOid={dashboard.oid}
           dashboardWidgets={dashboardWidgets} />
       </Main>
     </MainPage>

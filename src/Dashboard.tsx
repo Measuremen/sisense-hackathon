@@ -1,11 +1,9 @@
-import { FC, useCallback, useState } from 'react';
+import { FC } from 'react';
 import { useDrop, XYCoord } from 'react-dnd';
 import 'react-resizable/css/styles.css';
 import { CompleteThemeSettings, WidgetModel } from '@sisense/sdk-ui';
 import { Widget } from './Widget.tsx';
 import { styled } from '@mui/material';
-import ExportButton from './export.tsx';
-import ExportPDF from './exportPdf.tsx';
 
 interface DashboardProps {
   isMoveMode: boolean;
@@ -14,6 +12,8 @@ interface DashboardProps {
   themeSettings: CompleteThemeSettings;
   onWidgetDelete: (widget: WidgetModel) => void;
   onWidgetOrderUpdate: (currentIndex: number, newIndex: number) => void;
+  widgetPositions: WidgetPositions;
+  moveBox: (id: string, left: number, top: number) => void;
 }
 
 export interface DragItem {
@@ -23,23 +23,15 @@ export interface DragItem {
   left: number;
 }
 
+export interface WidgetPositions {
+  [key:string]: {
+    top:number,
+    left: number;
+  }
+}
 
-export const Dashboard: FC<DashboardProps> = ({ isMoveMode, onWidgetDelete, dashboardWidgets = [], dashboardOid, themeSettings, onWidgetOrderUpdate }) => {
-  const [widgetPositions, setWidgetPositions] = useState<{
-    [key: string]: {
-      top: number;
-      left: number;
-    }
-  }>({});
+export const Dashboard: FC<DashboardProps> = ({ isMoveMode, moveBox, widgetPositions, onWidgetDelete, dashboardWidgets = [], dashboardOid, themeSettings, onWidgetOrderUpdate }) => {
 
-  const moveBox = useCallback(
-    (id: string, left: number, top: number) => {
-      widgetPositions[id] = {left, top};
-      setWidgetPositions(widgetPositions);
-    },
-    [widgetPositions, setWidgetPositions],
-  );
-  
   const [{ canDrop, isOver }, drop] = useDrop(() => ({
     accept: ['menu-item', 'dashboard-item'],
     drop(item: DragItem, monitor) {
@@ -67,7 +59,7 @@ export const Dashboard: FC<DashboardProps> = ({ isMoveMode, onWidgetDelete, dash
   }
 
   return (
-    <DashboardBlock ref={drop} >
+    <DashboardBlock id="print-box" ref={drop} >
       {!dashboardWidgets.length && <p>{isActive ? 'Release in dotted area' : 'Drag a widget here'}</p>}
       <br />
       <DashboardWidgetsBlock style={{ border: `1px dashed ${borderColor}` }} >
@@ -81,13 +73,11 @@ export const Dashboard: FC<DashboardProps> = ({ isMoveMode, onWidgetDelete, dash
               left={widgetPositions[widget.oid] ? widgetPositions[widget.oid].left : index * 30} 
               top={widgetPositions[widget.oid] ? widgetPositions[widget.oid].top : index * 30} 
               isMoveMode={isMoveMode} 
-              widget={widget} 
+              widget={widget}
               dashboardOid={dashboardOid} />
           </DashboardWidgetsItem>
         ))}
       </DashboardWidgetsBlock>
-      <ExportButton />
-      <ExportPDF />
     </DashboardBlock>
   )
 }
